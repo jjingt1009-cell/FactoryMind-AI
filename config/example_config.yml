@@ -1,0 +1,11 @@
+# Example configuration for FactoryMind AI
+mqtt:
+  broker: "localhost"
+  port: 1883
+  topic_prefix: "factory"
+
+server:
+  host: "127.0.0.1"
+  port: 8080
+
+# Add production overrides in config/prod.yml (not committed)
