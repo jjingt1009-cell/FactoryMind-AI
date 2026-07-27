@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: factorymind_web
+    ports:
+      - "8080:8080"
+    environment:
+      # Override allowed origins in production via env var
+      - ALLOWED_ORIGINS=http://127.0.0.1:8080,http://localhost:8080
+    restart: unless-stopped
+
+# Optional: add a reverse-proxy service (nginx) later for TLS termination
+# nginx:
+#   image: nginx:stable-alpine
+#   ports:
+#     - "443:443"
+#   volumes:
+#     - ./nginx/conf.d:/etc/nginx/conf.d:ro
+#   depends_on:
+#     - web

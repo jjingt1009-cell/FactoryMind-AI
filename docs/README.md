@@ -1,0 +1,1 @@
+# Docs\nDesign notes and architecture will be placed here. Use this folder for deployment guides, architecture diagrams, and operator runbooks.
