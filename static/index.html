@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en"> <!-- 网页语言设为英文 / Set page language to English -->
+<head>
+    <meta charset="UTF-8"> <!-- 设置字符编码防止乱码 / Character encoding to prevent garbled text -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 适配移动端 / Responsive viewport -->
+    <title>FactoryMind AI - Enterprise V2.1 (Full)</title> 
+
+    <!-- [External Resources / 外部资源] -->
+    <!-- FontAwesome 图标库 / FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js 图表引擎 / Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入自定义样式 / Custom styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- app-container: 系统总外壳 / Root container for the entire system -->
+    <div class="app-container">
+
+        <!-- [Aside: Sidebar Navigation / 侧边导航栏] -->
+        <aside class="sidebar">
+            <!-- Logo Section / 品牌标志区 -->
+            <div class="logo">
+                <i class="fas fa-microchip"></i> 
+                <span>FactoryMind</span>
+            </div>
+            
+            <!-- Main Navigation / 主导航菜单 -->
+            <nav id="sidebar-nav">
+                <!-- data-target: 关键属性，JS 用它来决定切换哪个页面 / Key attribute used by JS to switch views -->
+                <a href="#" class="nav-item active" data-target="dashboard-view">
+                    <i class="fas fa-chart-pie"></i> Dashboard <!-- 看板首页 -->
+                </a>
+                <a href="#" class="nav-item" data-target="robot-view">
+                    <i class="fas fa-robot"></i> FactoryBot <!-- 机器人控制 -->
+                </a>
+                <a href="#" class="nav-item" data-target="ai-view">
+                    <i class="fas fa-brain"></i> AI Analytics <!-- AI 分析 -->
+                </a>
+                <a href="#" class="nav-item" data-target="report-view">
+                    <i class="fas fa-file-contract"></i> Reports <!-- 系统报表 -->
+                </a>
+            </nav>
+
+            <!-- Sidebar Footer / 侧边栏底部 -->
+            <div class="sidebar-footer">
+                <p><i class="fas fa-server"></i> <span id="backend-status">Backend Connected</span></p>
+            </div>
+        </aside>
+
+        <!-- [Content Area: The Main Screen / 右侧主显示区] -->
+        <div class="content-area">
+            
+            <!-- Header: System Stats & Clock / 顶部状态与时钟 -->
+            <header>
+                <div class="header-left">
+                    <h1 id="view-title">Dashboard Overview</h1> <!-- 动态页面标题 / Dynamic view title -->
+                    <p id="view-desc">Factory neural network real-time monitoring</p> <!-- 副标题 / Subtitle -->
+                </div>
+                <div class="header-right">
+                    <!-- System Status Indicator / 系统在线指示灯 -->
+                    <div class="system-status">
+                        <span class="status-dot"></span> System Live 
+                    </div>
+                    <!-- Digital Clock / 数字时钟槽位 -->
+                    <div class="clock">
+                        <span id="current-time">00:00:00</span>
+                        <span id="current-date">2024-01-01</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- main: View Stage / 视图切换舞台 -->
+            <main id="main-view-container">
+                
+                <!-- 1. Dashboard View / 实时数据看板视图 -->
+                <div id="dashboard-view" class="view-content active">
+                    <!-- Card Grid: Telemetry Cards / 数据卡片网格 -->
+                    <div class="card-grid">
+                        <!-- Temperature Card / 温度监控 -->
+                        <div class="card stat-card temp">
+                            <div class="card-info">
+                                <h3>Temperature</h3>
+                                <p><span id="temp">--</span>°C</p> <!-- Data hook for JS / JS 数据钩子 -->
+                            </div>
+                            <i class="fas fa-temperature-high icon"></i>
+                        </div>
+                        <!-- Energy Card / 能耗监控 -->
+                        <div class="card stat-card energy">
+                            <div class="card-info">
+                                <h3>Energy Power</h3>
+                                <p><span id="energy">--</span>kW/h</p>
+                            </div>
+                            <i class="fas fa-bolt icon"></i>
+                        </div>
+                        <!-- Status Card / 系统状态判定 -->
+                        <div class="card stat-card status">
+                            <div class="card-info">
+                                <h3>System Status</h3>
+                                <p id="status" class="status-val">SYNCING...</p>
+                            </div>
+                            <i class="fas fa-check-circle icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Chart Section / 实时趋势图表区 -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-wave-square"></i> Production Trend (Live)</h3>
+                        </div>
+                        <!-- Canvas for Chart.js / 给 Chart.js 绘图用的画布 -->
+                        <canvas id="productionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 2. Robot Control View / 机器人控制视图（占位） -->
+                <div id="robot-view" class="view-content">
+                    <div class="placeholder-screen">
+                        <i class="fas fa-robot"></i>
+                        <h2>FactoryBot Controller</h2>
+                        <p>Establishing secure link to Robot Module (Phase 6)...</p> <!-- 预留给 Phase 6 / Reserved for Phase 6 -->
+                    </div>
+                </div>
+
+                <!-- 3. AI Analytics View / AI 分析视图（占位） -->
+                <div id="ai-view" class="view-content">
+                    <div class="placeholder-screen">
+                        <i class="fas fa-brain"></i>
+                        <h2>AI Predictive Center</h2>
+                        <p>Loading Deep Learning Training Model (Phase 4)...</p> <!-- 预留给 Phase 4 / Reserved for Phase 4 -->
+                    </div>
+                </div>
+
+                <!-- 4. Reports View / 报表视图（占位） -->
+                <div id="report-view" class="view-content">
+                    <div class="placeholder-screen">
+                        <i class="fas fa-file-contract"></i>
+                        <h2>Factory Reports</h2>
+                        <p>Accessing Historical Database Records (Phase 3)...</p> <!-- 预留给 Phase 3 / Reserved for Phase 3 -->
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- Footer / 页脚 -->
+            <footer>
+                <p>FactoryMind AI &copy; 2026 | V2.1 Final Stable Build</p>
+            </footer>
+
+        </div> <!-- content-area end -->
+    </div> <!-- app-container end -->
+
+    <!-- Core Business Logic / 核心业务逻辑脚本 -->
+    <script src="script.js"></script>
+</body>
+</html>
