@@ -19,6 +19,7 @@ A lightweight real-time telemetry platform built with FastAPI and Chart.js that 
 - Concurrency-safe debounce alarm: requires 3 consecutive high-temp readings to trigger a CRITICAL
 - /health endpoint for loadbalancer/readiness checks
 - Environment-driven CORS (ALLOWED_ORIGINS)
+- Android USB diagnostics through the local ADB bridge (`/api/phone`)
 - Dockerfile and docker-compose for reproducible deployment
 
 ## Quick start (local)
@@ -86,6 +87,11 @@ docker compose up --build
 ## API
 - GET /health -> { status: "ok", timestamp }
 - GET /api/data -> telemetry JSON (temperature, energy, production, status_text, status_code, alert_count, timestamp)
+- GET /api/phone -> Android USB state and non-sensitive diagnostics (device, battery, temperature)
+
+### Android USB diagnostics
+
+Install Android SDK Platform-Tools, enable USB debugging on the phone, connect it by cable, and approve the RSA prompt. The dashboard reports `connected`, `disconnected`, `unauthorized`, or `unavailable`; it does not treat an unreadable device as healthy.
 
 ## Tests
 Run the smoke tests (pytest):

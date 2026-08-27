@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"> <!-- 设置字符编码防止乱码 / Character encoding to prevent garbled text -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 适配移动端 / Responsive viewport -->
-    <title>FactoryMind AI - Enterprise V2.1 (Full)</title> 
+    <title>FactoryMind AI | Operations Console V3.0</title>
 
     <!-- [External Resources / 外部资源] -->
     <!-- FontAwesome 图标库 / FontAwesome icons -->
@@ -23,29 +23,29 @@
             <!-- Logo Section / 品牌标志区 -->
             <div class="logo">
                 <i class="fas fa-microchip"></i> 
-                <span>FactoryMind</span>
+                    <span>FactoryMind <small>OPS / 03</small></span>
             </div>
             
             <!-- Main Navigation / 主导航菜单 -->
             <nav id="sidebar-nav">
                 <!-- data-target: 关键属性，JS 用它来决定切换哪个页面 / Key attribute used by JS to switch views -->
-                <a href="#" class="nav-item active" data-target="dashboard-view">
+                <a href="#" class="nav-item active" data-target="dashboard-view" data-title="Operations overview" data-description="Live production intelligence for Line A">
                     <i class="fas fa-chart-pie"></i> Dashboard <!-- 看板首页 -->
                 </a>
-                <a href="#" class="nav-item" data-target="robot-view">
+                <a href="#" class="nav-item" data-target="robot-view" data-title="Asset control" data-description="Machine readiness and control center">
                     <i class="fas fa-robot"></i> FactoryBot <!-- 机器人控制 -->
                 </a>
-                <a href="#" class="nav-item" data-target="ai-view">
+                <a href="#" class="nav-item" data-target="ai-view" data-title="Predictive analytics" data-description="Signals requiring operator attention">
                     <i class="fas fa-brain"></i> AI Analytics <!-- AI 分析 -->
                 </a>
-                <a href="#" class="nav-item" data-target="report-view">
+                <a href="#" class="nav-item" data-target="report-view" data-title="Shift reports" data-description="Production history and operational notes">
                     <i class="fas fa-file-contract"></i> Reports <!-- 系统报表 -->
                 </a>
             </nav>
 
             <!-- Sidebar Footer / 侧边栏底部 -->
             <div class="sidebar-footer">
-                <p><i class="fas fa-server"></i> <span id="backend-status">Backend Connected</span></p>
+                <p><i class="fas fa-link"></i> <span id="backend-status">Connecting...</span></p>
             </div>
         </aside>
 
@@ -61,7 +61,7 @@
                 <div class="header-right">
                     <!-- System Status Indicator / 系统在线指示灯 -->
                     <div class="system-status">
-                        <span class="status-dot"></span> System Live 
+                        <span id="connection-dot" class="status-dot"></span> <span id="connection-label">SYSTEM LIVE</span>
                     </div>
                     <!-- Digital Clock / 数字时钟槽位 -->
                     <div class="clock">
@@ -100,14 +100,24 @@
                                 <h3>System Status</h3>
                                 <p id="status" class="status-val">SYNCING...</p>
                             </div>
-                            <i class="fas fa-check-circle icon"></i>
+                            <i class="fas fa-shield-halved icon"></i>
                         </div>
                     </div>
+                    <div class="card-grid secondary-grid">
+                        <div class="card metric-card"><span><small>OUTPUT / SHIFT</small><strong id="production">--</strong></span><i class="fas fa-boxes-stacked icon"></i></div>
+                        <div class="card metric-card"><span><small>VIBRATION / RMS</small><strong id="vibration">--</strong></span><i class="fas fa-wave-square icon"></i></div>
+                        <div class="card metric-card alert-card"><span><small>ACTIVE ALERTS</small><strong id="alert-count">00</strong></span><i class="fas fa-bell icon"></i></div>
+                    </div>
+                    <section class="phone-panel" aria-live="polite">
+                        <div class="phone-heading"><i class="fas fa-mobile-screen-button"></i><div><h3>USB device diagnostics</h3><p id="phone-message">Checking Android USB link...</p></div></div>
+                        <div class="phone-data"><span><small>DEVICE</small><strong id="phone-device">--</strong></span><span><small>BATTERY</small><strong id="phone-battery">--</strong></span><span><small>PHONE TEMP</small><strong id="phone-temperature">--</strong></span></div>
+                    </section>
 
                     <!-- Chart Section / 实时趋势图表区 -->
                     <div class="chart-container">
                         <div class="chart-header">
-                            <h3><i class="fas fa-wave-square"></i> Production Trend (Live)</h3>
+                            <h3><i class="fas fa-wave-square"></i> Production trend <span>LAST 18 SAMPLES</span></h3>
+                            <div class="chart-actions"><span id="last-update">Waiting for data</span><button id="manual-refresh" title="Refresh now"><i class="fas fa-rotate"></i></button><button id="refresh-toggle"><i class="fas fa-pause"></i> Pause feed</button></div>
                         </div>
                         <!-- Canvas for Chart.js / 给 Chart.js 绘图用的画布 -->
                         <canvas id="productionChart"></canvas>
@@ -116,28 +126,23 @@
 
                 <!-- 2. Robot Control View / 机器人控制视图（占位） -->
                 <div id="robot-view" class="view-content">
-                    <div class="placeholder-screen">
-                        <i class="fas fa-robot"></i>
-                        <h2>FactoryBot Controller</h2>
-                        <p>Establishing secure link to Robot Module (Phase 6)...</p> <!-- 预留给 Phase 6 / Reserved for Phase 6 -->
+                    <div class="example-grid">
+                        <section class="example-panel asset-hero"><span class="eyebrow">ASSET CONTROL / LINE A</span><i class="fas fa-robot"></i><h2>FactoryBot Controller</h2><p>Monitor connected assets and operator readiness from one screen.</p><span class="state-pill ready"><i class="fas fa-circle"></i> All systems ready</span></section>
+                        <section class="example-panel"><div class="panel-title"><h3>Connected assets</h3><span>4 / 4 online</span></div><div class="asset-row"><i class="fas fa-gears"></i><span>Motor 07<small>Primary drive</small></span><b class="green-text">READY</b></div><div class="asset-row"><i class="fas fa-mobile-screen"></i><span>Android device<small>USB diagnostics</small></span><b class="green-text" id="asset-phone-state">SCANNING</b></div><div class="asset-row"><i class="fas fa-box"></i><span>Pack station<small>Output conveyor</small></span><b class="green-text">READY</b></div></section>
                     </div>
                 </div>
 
                 <!-- 3. AI Analytics View / AI 分析视图（占位） -->
                 <div id="ai-view" class="view-content">
-                    <div class="placeholder-screen">
-                        <i class="fas fa-brain"></i>
-                        <h2>AI Predictive Center</h2>
-                        <p>Loading Deep Learning Training Model (Phase 4)...</p> <!-- 预留给 Phase 4 / Reserved for Phase 4 -->
+                    <div class="example-grid analytics-grid">
+                        <section class="example-panel risk-panel"><span class="eyebrow">PREDICTIVE HEALTH / MOTOR 07</span><div class="risk-score"><strong>82</strong><span>/ 100<br>HEALTH SCORE</span></div><div class="signal-line"><span>Thermal stability</span><b>GOOD</b><i><em style="width: 78%"></em></i></div><div class="signal-line"><span>Vibration pattern</span><b>WATCH</b><i><em class="amber-bar" style="width: 54%"></em></i></div></section>
+                        <section class="example-panel"><div class="panel-title"><h3>Operator attention</h3><span>Updated now</span></div><div class="insight"><i class="fas fa-triangle-exclamation"></i><div><b>Temperature trend rising</b><p>Watch Motor 07 if the next 3 samples remain above 35°C.</p></div></div><div class="insight muted-insight"><i class="fas fa-check"></i><div><b>No critical prediction</b><p>Current signals do not require an intervention.</p></div></div></section>
                     </div>
                 </div>
 
                 <!-- 4. Reports View / 报表视图（占位） -->
                 <div id="report-view" class="view-content">
-                    <div class="placeholder-screen">
-                        <i class="fas fa-file-contract"></i>
-                        <h2>Factory Reports</h2>
-                        <p>Accessing Historical Database Records (Phase 3)...</p> <!-- 预留给 Phase 3 / Reserved for Phase 3 -->
+                    <div class="example-panel report-panel"><div class="panel-title"><div><span class="eyebrow">SHIFT PERFORMANCE / 27 AUG 2026</span><h2>Line A production report</h2></div><button class="outline-button"><i class="fas fa-download"></i> Export CSV</button></div><div class="report-summary"><span><small>UNITS PRODUCED</small><strong>1,428</strong></span><span><small>EFFICIENCY</small><strong>94.6%</strong></span><span><small>DOWNTIME</small><strong>18 min</strong></span></div><table><thead><tr><th>WINDOW</th><th>OUTPUT</th><th>EFFICIENCY</th><th>STATUS</th></tr></thead><tbody><tr><td>06:00 - 10:00</td><td>486 units</td><td>96.1%</td><td><b class="green-text">ON TARGET</b></td></tr><tr><td>10:00 - 14:00</td><td>512 units</td><td>95.4%</td><td><b class="green-text">ON TARGET</b></td></tr><tr><td>14:00 - 18:00</td><td>430 units</td><td>92.3%</td><td><b class="amber-text">MONITOR</b></td></tr></tbody></table>
                     </div>
                 </div>
 
@@ -145,7 +150,8 @@
 
             <!-- Footer / 页脚 -->
             <footer>
-                <p>FactoryMind AI &copy; 2026 | V2.1 Final Stable Build</p>
+                <p>FactoryMind AI &copy; 2026 <span id="machine-id">LINE-A / MOTOR-07</span></p>
+                <p id="sample-count">SAMPLE ----</p>
             </footer>
 
         </div> <!-- content-area end -->

@@ -6,6 +6,8 @@ import datetime
 import asyncio
 import os
 import logging
+import re
+import subprocess
 from typing import List
 
 
@@ -20,6 +22,8 @@ logger = logging.getLogger("factorymind")
 # Runtime shared state (use app.state to avoid module-level globals and protect with a lock)
 app.state.high_temp_count = 0
 app.state.high_temp_lock = asyncio.Lock()
+app.state.sample_count = 0
+app.state.started_at = datetime.datetime.now(datetime.timezone.utc)
 
 
 # --- [CORS Configuration / 跨域配置] ---
@@ -51,10 +55,12 @@ async def get_factory_telemetry():
     temp = round(random.uniform(28.0, 42.0), 1)  # 生成28-42度随机温度 / Generate 28-42C temp
     energy = round(random.uniform(40.0, 55.0), 1)  # 生成随机能耗 / Generate random energy
     production = random.randint(1200, 1500)  # 生成随机产量 / Generate random production
+    vibration = round(random.uniform(1.2, 4.8), 2)
 
     # 2. V2.1 Business Logic / 核心业务逻辑判断
     # Use an asyncio.Lock to protect updates to shared state in concurrent requests
     async with app.state.high_temp_lock:
+        app.state.sample_count += 1
         if temp > 38.0:  # 如果温度超过38度 / If temperature > 38C
             app.state.high_temp_count += 1  # 计数器加1 / Increment counter
         else:  # 否则 / Else
@@ -86,6 +92,10 @@ async def get_factory_telemetry():
         "temperature": temp,  # 温度值
         "energy": energy,  # 能耗值
         "production": production,  # 产量值
+        "vibration": vibration,
+        "machine_id": "LINE-A / MOTOR-07",
+        "sample_id": app.state.sample_count,
+        "thresholds": {"temperature_warning": 35.0, "temperature_critical": 38.0},
         "status_text": status_text,  # 状态描述
         "status_code": status_code,  # 颜色代号
         "alert_count": app.state.high_temp_count,  # 报警计数
@@ -93,11 +103,72 @@ async def get_factory_telemetry():
     }
 
 
+def _run_adb(*args: str) -> subprocess.CompletedProcess[str]:
+    adb_path = os.environ.get("ADB_PATH", "adb")
+    return subprocess.run(
+        [adb_path, *args], capture_output=True, text=True, timeout=2, check=False
+    )
+
+
+def _read_phone_diagnostics() -> dict:
+    try:
+        devices = _run_adb("devices").stdout.splitlines()[1:]
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return {"status": "unavailable", "message": "ADB not installed or unreachable"}
+
+    connected = []
+    unauthorized = False
+    for line in devices:
+        parts = line.split()
+        if len(parts) >= 2 and parts[1] == "device":
+            connected.append(parts[0])
+        elif len(parts) >= 2 and parts[1] == "unauthorized":
+            unauthorized = True
+
+    if not connected:
+        status = "unauthorized" if unauthorized else "disconnected"
+        message = "Allow USB debugging on the phone" if unauthorized else "Connect an Android phone via USB"
+        return {"status": status, "message": message}
+
+    serial = connected[0]
+    try:
+        model = _run_adb("-s", serial, "shell", "getprop", "ro.product.model").stdout.strip()
+        manufacturer = _run_adb("-s", serial, "shell", "getprop", "ro.product.manufacturer").stdout.strip()
+        battery = _run_adb("-s", serial, "shell", "dumpsys", "battery").stdout
+    except subprocess.TimeoutExpired:
+        return {"status": "unavailable", "message": "Phone diagnostics timed out"}
+
+    level_match = re.search(r"level:\s*(\d+)", battery)
+    temp_match = re.search(r"temperature:\s*(\d+)", battery)
+    return {
+        "status": "connected",
+        "message": "Android diagnostics available",
+        "serial": serial,
+        "device": f"{manufacturer} {model}".strip() or "Android device",
+        "battery_percent": int(level_match.group(1)) if level_match else None,
+        "battery_temperature_c": round(int(temp_match.group(1)) / 10, 1) if temp_match else None,
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    }
+
+
+@app.get("/api/phone")
+async def get_phone_diagnostics():
+    """Return non-sensitive Android USB diagnostics without blocking the event loop."""
+    return await asyncio.to_thread(_read_phone_diagnostics)
+
+
 # --- [Health check / 健康检查] ---
 @app.get("/health")
 async def health_check():
     """Simple health endpoint for load balancers and readiness checks"""
-    return {"status": "ok", "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()}
+    now = datetime.datetime.now(datetime.timezone.utc)
+    return {
+        "status": "ok",
+        "service": "FactoryMind telemetry",
+        "version": "3.0.0",
+        "uptime_seconds": round((now - app.state.started_at).total_seconds(), 1),
+        "timestamp": now.isoformat(),
+    }
 
 
 # --- [Static Files Hosting / 托管网页] ---
