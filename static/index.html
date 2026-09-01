@@ -1,163 +1,883 @@
 <!DOCTYPE html>
-<html lang="en"> <!-- 网页语言设为英文 / Set page language to English -->
+<html lang="en">
 <head>
-    <meta charset="UTF-8"> <!-- 设置字符编码防止乱码 / Character encoding to prevent garbled text -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 适配移动端 / Responsive viewport -->
-    <title>FactoryMind AI | Operations Console V3.0</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FactoryMind - Industrial Telemetry Console</title>
 
-    <!-- [External Resources / 外部资源] -->
-    <!-- FontAwesome 图标库 / FontAwesome icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js 图表引擎 / Chart.js for data visualization -->
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Orbitron:wght@400;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- 引入自定义样式 / Custom styles -->
+
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="cyber-theme">
 
-    <!-- app-container: 系统总外壳 / Root container for the entire system -->
+    <!-- Ambient backgrounds -->
+    <div class="ambient-grid"></div>
+    <div class="scanlines"></div>
+
     <div class="app-container">
 
-        <!-- [Aside: Sidebar Navigation / 侧边导航栏] -->
+        <!-- Sidebar Navigation -->
         <aside class="sidebar">
-            <!-- Logo Section / 品牌标志区 -->
-            <div class="logo">
-                <i class="fas fa-microchip"></i> 
-                    <span>FactoryMind <small>OPS / 03</small></span>
+            <div class="logo-wrapper">
+                <div class="logo-icon-box">
+                    <i class="fas fa-microchip logo-icon"></i>
+                    <span class="logo-ping"></span>
+                </div>
+                <div class="logo-text">
+                    <span class="brand-name">FACTORY<span class="brand-accent">MIND</span></span>
+                    <span class="brand-sub">TELEMETRY // V3.5</span>
+                </div>
             </div>
-            
-            <!-- Main Navigation / 主导航菜单 -->
+
+            <!-- Machine Line Selector -->
+            <div class="machine-selector-panel">
+                <label for="machine-select"><i class="fas fa-network-wired"></i> ACTIVE NODE</label>
+                <select id="machine-select" class="cyber-select">
+                    <option value="LINE-A / MOTOR-07">LINE-A // MOTOR-07 (Drive)</option>
+                    <option value="LINE-B / CNC-04">LINE-B // CNC-04 (Milling)</option>
+                    <option value="LINE-C / ROBOT-01">LINE-C // ROBOT-01 (Arm)</option>
+                </select>
+            </div>
+
             <nav id="sidebar-nav">
-                <!-- data-target: 关键属性，JS 用它来决定切换哪个页面 / Key attribute used by JS to switch views -->
-                <a href="#" class="nav-item active" data-target="dashboard-view" data-title="Operations overview" data-description="Live production intelligence for Line A">
-                    <i class="fas fa-chart-pie"></i> Dashboard <!-- 看板首页 -->
+                <a href="#" class="nav-item active" data-target="dashboard-view" data-title="Real-Time Telemetry HUD" data-description="Neural telemetry monitoring, live sensor matrices, and debounce alerting">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="nav-label">01 // Telemetry HUD</span>
+                    <span class="nav-indicator"></span>
                 </a>
-                <a href="#" class="nav-item" data-target="robot-view" data-title="Asset control" data-description="Machine readiness and control center">
-                    <i class="fas fa-robot"></i> FactoryBot <!-- 机器人控制 -->
+                <a href="#" class="nav-item" data-target="robot-view" data-title="Kinematics & Robot Control" data-description="6-Axis robotic manipulator kinematics, joint torques, and actuators">
+                    <i class="fas fa-robot"></i>
+                    <span class="nav-label">02 // Kinematics & Arm</span>
+                    <span class="nav-indicator"></span>
                 </a>
-                <a href="#" class="nav-item" data-target="ai-view" data-title="Predictive analytics" data-description="Signals requiring operator attention">
-                    <i class="fas fa-brain"></i> AI Analytics <!-- AI 分析 -->
+                <a href="#" class="nav-item" data-target="ai-view" data-title="Neural Health & Diagnostics" data-description="AI anomaly detection radar, remaining useful life (RUL), and predictive health">
+                    <i class="fas fa-brain"></i>
+                    <span class="nav-label">03 // AI Diagnostics</span>
+                    <span class="nav-indicator"></span>
                 </a>
-                <a href="#" class="nav-item" data-target="report-view" data-title="Shift reports" data-description="Production history and operational notes">
-                    <i class="fas fa-file-contract"></i> Reports <!-- 系统报表 -->
+                <a href="#" class="nav-item" data-target="report-view" data-title="Operational Audit & OEE" data-description="Shift production history, efficiency KPIs, and CSV audit export">
+                    <i class="fas fa-file-waveform"></i>
+                    <span class="nav-label">04 // Audit & OEE</span>
+                    <span class="nav-indicator"></span>
                 </a>
             </nav>
 
-            <!-- Sidebar Footer / 侧边栏底部 -->
+            <!-- Sidebar Telemetry System Stats -->
+            <div class="sidebar-status-box">
+                <div class="sub-status-title">SYSTEM HEARTBEAT</div>
+                <div class="sub-status-row">
+                    <span>ASYNC LOCK:</span>
+                    <b class="cyan-text" id="sidebar-lock-state">PROTECTED</b>
+                </div>
+                <div class="sub-status-row">
+                    <span>BUS LOAD:</span>
+                    <b class="green-text" id="sidebar-bus-load">2.4%</b>
+                </div>
+                <div class="sub-status-row">
+                    <span>UPTIME:</span>
+                    <b class="amber-text" id="sidebar-uptime">--s</b>
+                </div>
+                <div class="status-progress-track">
+                    <div class="status-progress-fill" style="width: 92%;"></div>
+                </div>
+            </div>
+
             <div class="sidebar-footer">
-                <p><i class="fas fa-link"></i> <span id="backend-status">Connecting...</span></p>
+                <div class="link-state">
+                    <i class="fas fa-circle-nodes" id="link-icon"></i>
+                    <span id="backend-status">HTTP/2 CONNECTED</span>
+                </div>
+                <span class="fw-badge">BUILD 3.5.0-PRO</span>
             </div>
         </aside>
 
-        <!-- [Content Area: The Main Screen / 右侧主显示区] -->
+        <!-- [Main Content Area] -->
         <div class="content-area">
-            
-            <!-- Header: System Stats & Clock / 顶部状态与时钟 -->
-            <header>
+
+            <!-- Top HUD Bar -->
+            <header class="hud-header">
                 <div class="header-left">
-                    <h1 id="view-title">Dashboard Overview</h1> <!-- 动态页面标题 / Dynamic view title -->
-                    <p id="view-desc">Factory neural network real-time monitoring</p> <!-- 副标题 / Subtitle -->
-                </div>
-                <div class="header-right">
-                    <!-- System Status Indicator / 系统在线指示灯 -->
-                    <div class="system-status">
-                        <span id="connection-dot" class="status-dot"></span> <span id="connection-label">SYSTEM LIVE</span>
+                    <div class="view-tag-box">
+                        <span class="hud-bracket">[</span>
+                        <span class="view-tag" id="view-tag">SYSTEM VIEW // 01</span>
+                        <span class="hud-bracket">]</span>
                     </div>
-                    <!-- Digital Clock / 数字时钟槽位 -->
-                    <div class="clock">
-                        <span id="current-time">00:00:00</span>
-                        <span id="current-date">2024-01-01</span>
+                    <h1 id="view-title">Real-Time Telemetry HUD</h1>
+                    <p id="view-desc">Neural telemetry monitoring, live sensor matrices, and debounce alerting</p>
+                </div>
+
+                <div class="header-right">
+                    <!-- Audio FX Toggle Button -->
+                    <button id="audio-toggle-btn" class="hud-icon-btn" title="Toggle Sci-Fi Audio Effects">
+                        <i class="fas fa-volume-high" id="audio-icon"></i>
+                        <span class="btn-micro-text">AUDIO ON</span>
+                    </button>
+
+                    <!-- Fullscreen Toggle Button -->
+                    <button id="fullscreen-btn" class="hud-icon-btn" title="Toggle Fullscreen HUD Mode">
+                        <i class="fas fa-expand"></i>
+                        <span class="btn-micro-text">FULLSCREEN</span>
+                    </button>
+
+                    <!-- Live Protocol Badges -->
+                    <div class="hud-badge-group">
+                        <div class="hud-badge">
+                            <span class="badge-label">LATENCY</span>
+                            <span class="badge-val cyan-text" id="latency-val">12 ms</span>
+                        </div>
+                        <div class="hud-badge">
+                            <span class="badge-label">FRAME RATE</span>
+                            <span class="badge-val green-text" id="fps-val">60 FPS</span>
+                        </div>
+                        <div class="hud-badge status-live-badge">
+                            <span class="pulse-ring" id="status-pulse"></span>
+                            <span id="connection-dot" class="status-dot"></span>
+                            <span id="connection-label">NODE ONLINE</span>
+                        </div>
+                    </div>
+
+                    <!-- Digital Atomic Clock -->
+                    <div class="hud-clock">
+                        <div class="clock-time" id="current-time">00:00:00</div>
+                        <div class="clock-sub">
+                            <span id="current-date">2026-09-01</span>
+                            <span class="utc-badge">UTC+8</span>
+                        </div>
                     </div>
                 </div>
             </header>
 
-            <!-- main: View Stage / 视图切换舞台 -->
+            <!-- Main Interactive Viewport -->
             <main id="main-view-container">
-                
-                <!-- 1. Dashboard View / 实时数据看板视图 -->
+
+                <!-- ======================================================== -->
+                <!-- VIEW 1: TELEMETRY DASHBOARD                             -->
+                <!-- ======================================================== -->
                 <div id="dashboard-view" class="view-content active">
-                    <!-- Card Grid: Telemetry Cards / 数据卡片网格 -->
-                    <div class="card-grid">
-                        <!-- Temperature Card / 温度监控 -->
-                        <div class="card stat-card temp">
-                            <div class="card-info">
-                                <h3>Temperature</h3>
-                                <p><span id="temp">--</span>°C</p> <!-- Data hook for JS / JS 数据钩子 -->
-                            </div>
-                            <i class="fas fa-temperature-high icon"></i>
-                        </div>
-                        <!-- Energy Card / 能耗监控 -->
-                        <div class="card stat-card energy">
-                            <div class="card-info">
-                                <h3>Energy Power</h3>
-                                <p><span id="energy">--</span>kW/h</p>
-                            </div>
-                            <i class="fas fa-bolt icon"></i>
-                        </div>
-                        <!-- Status Card / 系统状态判定 -->
-                        <div class="card stat-card status">
-                            <div class="card-info">
-                                <h3>System Status</h3>
-                                <p id="status" class="status-val">SYNCING...</p>
-                            </div>
-                            <i class="fas fa-shield-halved icon"></i>
-                        </div>
-                    </div>
-                    <div class="card-grid secondary-grid">
-                        <div class="card metric-card"><span><small>OUTPUT / SHIFT</small><strong id="production">--</strong></span><i class="fas fa-boxes-stacked icon"></i></div>
-                        <div class="card metric-card"><span><small>VIBRATION / RMS</small><strong id="vibration">--</strong></span><i class="fas fa-wave-square icon"></i></div>
-                        <div class="card metric-card alert-card"><span><small>ACTIVE ALERTS</small><strong id="alert-count">00</strong></span><i class="fas fa-bell icon"></i></div>
-                    </div>
-                    <section class="phone-panel" aria-live="polite">
-                        <div class="phone-heading"><i class="fas fa-mobile-screen-button"></i><div><h3>USB device diagnostics</h3><p id="phone-message">Checking Android USB link...</p></div></div>
-                        <div class="phone-data"><span><small>DEVICE</small><strong id="phone-device">--</strong></span><span><small>BATTERY</small><strong id="phone-battery">--</strong></span><span><small>PHONE TEMP</small><strong id="phone-temperature">--</strong></span></div>
-                    </section>
 
-                    <!-- Chart Section / 实时趋势图表区 -->
-                    <div class="chart-container">
-                        <div class="chart-header">
-                            <h3><i class="fas fa-wave-square"></i> Production trend <span>LAST 18 SAMPLES</span></h3>
-                            <div class="chart-actions"><span id="last-update">Waiting for data</span><button id="manual-refresh" title="Refresh now"><i class="fas fa-rotate"></i></button><button id="refresh-toggle"><i class="fas fa-pause"></i> Pause feed</button></div>
+                    <!-- Diagnostic Simulation Control Deck -->
+                    <div class="control-deck-bar">
+                        <div class="deck-group left">
+                            <span class="deck-title"><i class="fas fa-sliders"></i> SCADA INTERLOCK CONTROLS:</span>
+                            <button id="btn-stress-toggle" class="cyber-btn cyber-btn-amber">
+                                <i class="fas fa-bolt"></i>
+                                <span>SIMULATE STRESS OVERLOAD</span>
+                            </button>
+                            <button id="btn-estop-toggle" class="cyber-btn cyber-btn-danger">
+                                <i class="fas fa-triangle-exclamation"></i>
+                                <span>EMERGENCY STOP (E-STOP)</span>
+                            </button>
+                            <button id="btn-reset-alarms" class="cyber-btn cyber-btn-cyan">
+                                <i class="fas fa-arrows-rotate"></i>
+                                <span>RESET ALARMS & DEBOUNCE</span>
+                            </button>
                         </div>
-                        <!-- Canvas for Chart.js / 给 Chart.js 绘图用的画布 -->
-                        <canvas id="productionChart"></canvas>
+                        <div class="deck-group right">
+                            <div class="window-toggle-group">
+                                <span>BUFFER:</span>
+                                <button class="range-btn active" data-range="15">15s</button>
+                                <button class="range-btn" data-range="30">30s</button>
+                                <button class="range-btn" data-range="45">45s</button>
+                            </div>
+                            <button id="manual-refresh" class="cyber-btn cyber-btn-ghost" title="Poll Telemetry Now">
+                                <i class="fas fa-rotate"></i>
+                            </button>
+                            <button id="refresh-toggle" class="cyber-btn cyber-btn-ghost">
+                                <i class="fas fa-pause"></i> <span>PAUSE</span>
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- 6-Metric High-Tech HUD Gauges Grid -->
+                    <div class="telemetry-gauge-grid">
+
+                        <!-- Gauge 1: Core Temperature -->
+                        <div class="gauge-card card-temp">
+                            <div class="gauge-corner tl"></div><div class="gauge-corner tr"></div>
+                            <div class="gauge-corner bl"></div><div class="gauge-corner br"></div>
+                            <div class="gauge-header">
+                                <span class="gauge-tag"><i class="fas fa-temperature-arrow-up"></i> THERMAL SENSOR</span>
+                                <span class="gauge-limit">WARN: 35°C | CRIT: 38°C</span>
+                            </div>
+                            <div class="gauge-body">
+                                <div class="gauge-radial-box">
+                                    <svg class="radial-svg" viewBox="0 0 100 100">
+                                        <circle class="radial-bg" cx="50" cy="50" r="42"></circle>
+                                        <circle id="temp-gauge-circle" class="radial-progress temp-ring" cx="50" cy="50" r="42"></circle>
+                                    </svg>
+                                    <div class="radial-inner-val">
+                                        <span class="big-val" id="temp">--</span>
+                                        <span class="unit">°C</span>
+                                    </div>
+                                </div>
+                                <div class="gauge-details">
+                                    <div class="detail-label">CORE TEMPERATURE</div>
+                                    <div class="detail-status" id="temp-status-badge">NOMINAL</div>
+                                    <div class="mini-spark-line">
+                                        <div class="spark-bar" id="temp-bar" style="width: 65%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gauge 2: Spindle / Motor RPM -->
+                        <div class="gauge-card card-rpm">
+                            <div class="gauge-corner tl"></div><div class="gauge-corner tr"></div>
+                            <div class="gauge-corner bl"></div><div class="gauge-corner br"></div>
+                            <div class="gauge-header">
+                                <span class="gauge-tag"><i class="fas fa-gauge-high"></i> ROTATIONAL SPEED</span>
+                                <span class="gauge-limit">NOMINAL: 1,750 RPM</span>
+                            </div>
+                            <div class="gauge-body">
+                                <div class="gauge-radial-box">
+                                    <svg class="radial-svg" viewBox="0 0 100 100">
+                                        <circle class="radial-bg" cx="50" cy="50" r="42"></circle>
+                                        <circle id="rpm-gauge-circle" class="radial-progress rpm-ring" cx="50" cy="50" r="42"></circle>
+                                    </svg>
+                                    <div class="radial-inner-val">
+                                        <span class="big-val" id="rpm">--</span>
+                                        <span class="unit">RPM</span>
+                                    </div>
+                                </div>
+                                <div class="gauge-details">
+                                    <div class="detail-label">SHAFT FREQUENCY</div>
+                                    <div class="detail-status" id="rpm-status-badge">SYNCHRONIZED</div>
+                                    <div class="mini-spark-line">
+                                        <div class="spark-bar cyan-bar" id="rpm-bar" style="width: 58%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gauge 3: Active Power & Load -->
+                        <div class="gauge-card card-power">
+                            <div class="gauge-corner tl"></div><div class="gauge-corner tr"></div>
+                            <div class="gauge-corner bl"></div><div class="gauge-corner br"></div>
+                            <div class="gauge-header">
+                                <span class="gauge-tag"><i class="fas fa-bolt-lightning"></i> POWER & LOAD</span>
+                                <span class="gauge-limit">MAX: 85.0 kW</span>
+                            </div>
+                            <div class="gauge-body">
+                                <div class="gauge-radial-box">
+                                    <svg class="radial-svg" viewBox="0 0 100 100">
+                                        <circle class="radial-bg" cx="50" cy="50" r="42"></circle>
+                                        <circle id="power-gauge-circle" class="radial-progress power-ring" cx="50" cy="50" r="42"></circle>
+                                    </svg>
+                                    <div class="radial-inner-val">
+                                        <span class="big-val" id="energy">--</span>
+                                        <span class="unit">kW</span>
+                                    </div>
+                                </div>
+                                <div class="gauge-details">
+                                    <div class="detail-label">BUS POWER CONSUMPTION</div>
+                                    <div class="detail-status" id="load-val">LOAD: --%</div>
+                                    <div class="mini-spark-line">
+                                        <div class="spark-bar amber-bar" id="load-bar" style="width: 52%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gauge 4: Vibration RMS -->
+                        <div class="gauge-card card-vibe">
+                            <div class="gauge-corner tl"></div><div class="gauge-corner tr"></div>
+                            <div class="gauge-corner bl"></div><div class="gauge-corner br"></div>
+                            <div class="gauge-header">
+                                <span class="gauge-tag"><i class="fas fa-wave-square"></i> VIBRATION HARMONICS</span>
+                                <span class="gauge-limit">THRESHOLD: 4.8 mm/s</span>
+                            </div>
+                            <div class="gauge-body">
+                                <div class="gauge-radial-box">
+                                    <svg class="radial-svg" viewBox="0 0 100 100">
+                                        <circle class="radial-bg" cx="50" cy="50" r="42"></circle>
+                                        <circle id="vibe-gauge-circle" class="radial-progress vibe-ring" cx="50" cy="50" r="42"></circle>
+                                    </svg>
+                                    <div class="radial-inner-val">
+                                        <span class="big-val" id="vibration">--</span>
+                                        <span class="unit">mm/s</span>
+                                    </div>
+                                </div>
+                                <div class="gauge-details">
+                                    <div class="detail-label">AXIAL RMS AMPLITUDE</div>
+                                    <div class="detail-status" id="vibe-status-badge">STABLE</div>
+                                    <div class="mini-spark-line">
+                                        <div class="spark-bar green-bar" id="vibe-bar" style="width: 32%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gauge 5: OEE Shift Quality -->
+                        <div class="gauge-card card-oee">
+                            <div class="gauge-corner tl"></div><div class="gauge-corner tr"></div>
+                            <div class="gauge-corner bl"></div><div class="gauge-corner br"></div>
+                            <div class="gauge-header">
+                                <span class="gauge-tag"><i class="fas fa-industry"></i> OVERALL EFFICIENCY</span>
+                                <span class="gauge-limit">BENCHMARK: 85.0%</span>
+                            </div>
+                            <div class="gauge-body">
+                                <div class="gauge-radial-box">
+                                    <svg class="radial-svg" viewBox="0 0 100 100">
+                                        <circle class="radial-bg" cx="50" cy="50" r="42"></circle>
+                                        <circle id="oee-gauge-circle" class="radial-progress oee-ring" cx="50" cy="50" r="42"></circle>
+                                    </svg>
+                                    <div class="radial-inner-val">
+                                        <span class="big-val" id="oee-val">--</span>
+                                        <span class="unit">%</span>
+                                    </div>
+                                </div>
+                                <div class="gauge-details">
+                                    <div class="detail-label">OEE EFFICIENCY INDEX</div>
+                                    <div class="detail-status" id="oee-status-badge">WORLD CLASS</div>
+                                    <div class="mini-spark-line">
+                                        <div class="spark-bar green-bar" id="oee-bar" style="width: 95%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gauge 6: Debounce Alarm State -->
+                        <div class="gauge-card card-alert">
+                            <div class="gauge-corner tl"></div><div class="gauge-corner tr"></div>
+                            <div class="gauge-corner bl"></div><div class="gauge-corner br"></div>
+                            <div class="gauge-header">
+                                <span class="gauge-tag"><i class="fas fa-shield-halved"></i> DEBOUNCE ALARM LOGIC</span>
+                                <span class="gauge-limit">3 SAMPLES REQ FOR CRIT</span>
+                            </div>
+                            <div class="gauge-body">
+                                <div class="debounce-indicator-box">
+                                    <div class="debounce-pills">
+                                        <span class="debounce-pill" id="dp-1">1</span>
+                                        <span class="debounce-pill" id="dp-2">2</span>
+                                        <span class="debounce-pill" id="dp-3">3</span>
+                                    </div>
+                                    <div class="status-main-label" id="status">SYNCING...</div>
+                                </div>
+                                <div class="gauge-details">
+                                    <div class="detail-label">CONSECUTIVE ALERTS</div>
+                                    <div class="detail-status" id="alert-count-label"><span id="alert-count">00</span> / 03 TRIGGERS</div>
+                                    <div class="mini-spark-line">
+                                        <div class="spark-bar red-bar" id="alert-bar" style="width: 0%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Dual Split: Telemetry Chart & SCADA Event Stream -->
+                    <div class="telemetry-split-layout">
+
+                        <!-- Left: Real-Time Holographic Chart -->
+                        <div class="hud-panel chart-panel">
+                            <div class="panel-header">
+                                <div class="panel-title-group">
+                                    <i class="fas fa-chart-area cyan-text"></i>
+                                    <h3>LIVE TELEMETRY STREAM</h3>
+                                    <span class="panel-subtitle">// DUAL-AXIS: PRODUCTION & POWER DRAW</span>
+                                </div>
+                                <div class="chart-meta">
+                                    <span class="meta-tag">OUTPUT ACCUMULATOR: <strong id="production" class="cyan-text">--</strong> UNITS</span>
+                                    <span class="meta-tag" id="last-update">POLLING DATA...</span>
+                                </div>
+                            </div>
+                            <div class="chart-canvas-wrapper">
+                                <canvas id="productionChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Right: Live SCADA Event Log Terminal -->
+                        <div class="hud-panel terminal-panel">
+                            <div class="panel-header">
+                                <div class="panel-title-group">
+                                    <i class="fas fa-terminal green-text"></i>
+                                    <h3>SCADA EVENT STREAM</h3>
+                                    <span class="panel-subtitle">// MODBUS / PLC LOGS</span>
+                                </div>
+                                <div class="terminal-actions">
+                                    <button class="term-filter-btn active" data-level="ALL">ALL</button>
+                                    <button class="term-filter-btn" data-level="WARN">ALERTS</button>
+                                </div>
+                            </div>
+                            <div class="terminal-body" id="scada-terminal-logs">
+                                <div class="terminal-row info">
+                                    <span class="term-time">00:00:00</span>
+                                    <span class="term-tag">[PLC_INIT]</span>
+                                    <span class="term-msg">SCADA neural telemetry daemon initialized.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
 
-                <!-- 2. Robot Control View / 机器人控制视图（占位） -->
+                <!-- ======================================================== -->
+                <!-- VIEW 2: KINEMATICS & ROBOT CONTROL                      -->
+                <!-- ======================================================== -->
                 <div id="robot-view" class="view-content">
-                    <div class="example-grid">
-                        <section class="example-panel asset-hero"><span class="eyebrow">ASSET CONTROL / LINE A</span><i class="fas fa-robot"></i><h2>FactoryBot Controller</h2><p>Monitor connected assets and operator readiness from one screen.</p><span class="state-pill ready"><i class="fas fa-circle"></i> All systems ready</span></section>
-                        <section class="example-panel"><div class="panel-title"><h3>Connected assets</h3><span>4 / 4 online</span></div><div class="asset-row"><i class="fas fa-gears"></i><span>Motor 07<small>Primary drive</small></span><b class="green-text">READY</b></div><div class="asset-row"><i class="fas fa-mobile-screen"></i><span>Android device<small>USB diagnostics</small></span><b class="green-text" id="asset-phone-state">SCANNING</b></div><div class="asset-row"><i class="fas fa-box"></i><span>Pack station<small>Output conveyor</small></span><b class="green-text">READY</b></div></section>
+
+                    <div class="robot-workspace-grid">
+
+                        <!-- Holographic 6-Axis Robotic Arm Viewport -->
+                        <div class="hud-panel robot-schematic-panel">
+                            <div class="panel-header">
+                                <div class="panel-title-group">
+                                    <i class="fas fa-robot cyan-text"></i>
+                                    <h3>6-AXIS ARTICULATED ROBOTIC ARM</h3>
+                                    <span class="panel-subtitle" id="robot-model-display">// UR5e / 6-AXIS DIGITAL TWIN</span>
+                                </div>
+                                <div class="robot-header-badges">
+                                    <span class="badge-status-ok" id="robot-link-type"><i class="fas fa-microchip"></i> DIGITAL TWIN (SIMULATION)</span>
+                                    <div class="robot-state-pill" id="robot-state-badge">
+                                        <span class="pulse-ring"></span>
+                                        <i class="fas fa-circle-check green-text"></i>
+                                        <span id="robot-cycle-state">CYCLE READY</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Interactive SVG Holographic Arm Model -->
+                            <div class="arm-viewport">
+                                <svg class="arm-svg" viewBox="0 0 600 400">
+                                    <!-- Coordinate Grid & Target Crosshairs -->
+                                    <defs>
+                                        <pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+                                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(0, 240, 255, 0.08)" stroke-width="1"/>
+                                        </pattern>
+                                        <radialGradient id="arm-glow" cx="50%" cy="50%" r="50%">
+                                            <stop offset="0%" stop-color="rgba(0, 240, 255, 0.4)"/>
+                                            <stop offset="100%" stop-color="rgba(0, 240, 255, 0)"/>
+                                        </radialGradient>
+                                    </defs>
+                                    <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+                                    
+                                    <!-- Base Pedestal -->
+                                    <line x1="50" y1="360" x2="550" y2="360" stroke="rgba(0, 240, 255, 0.2)" stroke-width="2"/>
+                                    <polygon points="260,360 340,360 325,320 275,320" fill="rgba(10, 30, 50, 0.8)" stroke="#00f0ff" stroke-width="2"/>
+                                    <circle cx="300" cy="320" r="14" fill="#030712" stroke="#00ff9d" stroke-width="3"/>
+                                    <text x="300" y="324" fill="#00ff9d" font-size="10" text-anchor="middle" font-family="JetBrains Mono">J1</text>
+
+                                    <!-- Joint 1 Link -->
+                                    <g id="arm-link-1" transform="rotate(-15, 300, 320)">
+                                        <line x1="300" y1="320" x2="300" y2="200" stroke="#00f0ff" stroke-width="10" stroke-linecap="round"/>
+                                        <line x1="300" y1="320" x2="300" y2="200" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                                        
+                                        <!-- Joint 2 Elbow -->
+                                        <circle cx="300" cy="200" r="12" fill="#030712" stroke="#00f0ff" stroke-width="3"/>
+                                        <text x="300" y="204" fill="#00f0ff" font-size="9" text-anchor="middle" font-family="JetBrains Mono">J2</text>
+
+                                        <!-- Forearm Link -->
+                                        <g id="arm-link-2" transform="rotate(45, 300, 200)">
+                                            <line x1="300" y1="200" x2="420" y2="120" stroke="#00f0ff" stroke-width="7" stroke-linecap="round"/>
+                                            <line x1="300" y1="200" x2="420" y2="120" stroke="#00ff9d" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+                                            <!-- Joint 3 Wrist -->
+                                            <circle cx="420" cy="120" r="10" fill="#030712" stroke="#ffaa00" stroke-width="2.5"/>
+                                            <text x="420" y="123" fill="#ffaa00" font-size="8" text-anchor="middle" font-family="JetBrains Mono">J3</text>
+
+                                            <!-- Wrist Roll & End Effector -->
+                                            <g id="arm-link-3" transform="rotate(-30, 420, 120)">
+                                                <line x1="420" y1="120" x2="470" y2="90" stroke="#ffaa00" stroke-width="5" stroke-linecap="round"/>
+                                                
+                                                <!-- Gripper Claws -->
+                                                <circle cx="470" cy="90" r="6" fill="#ff2a6d"/>
+                                                <g id="gripper-assembly">
+                                                    <path d="M 470 90 L 490 75 L 505 80" fill="none" stroke="#ff2a6d" stroke-width="3" stroke-linecap="round"/>
+                                                    <path d="M 470 90 L 490 105 L 505 100" fill="none" stroke="#ff2a6d" stroke-width="3" stroke-linecap="round"/>
+                                                    <circle cx="505" cy="80" r="3" fill="#00ff9d"/>
+                                                    <circle cx="505" cy="100" r="3" fill="#00ff9d"/>
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </g>
+
+                                    <!-- HUD Target Vector Crosshair -->
+                                    <circle cx="505" cy="90" r="18" fill="none" stroke="rgba(255, 42, 109, 0.4)" stroke-dasharray="3,3"/>
+                                    <text x="530" y="85" fill="#ff2a6d" font-size="10" font-family="JetBrains Mono">TARGET VECTOR [X:642, Y:-120, Z:850]</text>
+                                </svg>
+                            </div>
+
+                            <!-- Kinematic Pose Matrix Coordinates -->
+                            <div class="kinematic-coord-bar">
+                                <div class="coord-item">
+                                    <span class="coord-label">POS X</span>
+                                    <span class="coord-val cyan-text" id="coord-x">642.8 mm</span>
+                                </div>
+                                <div class="coord-item">
+                                    <span class="coord-label">POS Y</span>
+                                    <span class="coord-val cyan-text" id="coord-y">-120.4 mm</span>
+                                </div>
+                                <div class="coord-item">
+                                    <span class="coord-label">POS Z</span>
+                                    <span class="coord-val cyan-text" id="coord-z">850.0 mm</span>
+                                </div>
+                                <div class="coord-item">
+                                    <span class="coord-label">PITCH θ</span>
+                                    <span class="coord-val amber-text" id="coord-pitch">45.0°</span>
+                                </div>
+                                <div class="coord-item">
+                                    <span class="coord-label">ROLL φ</span>
+                                    <span class="coord-val amber-text" id="coord-roll">0.0°</span>
+                                </div>
+                                <div class="coord-item">
+                                    <span class="coord-label">YAW ψ</span>
+                                    <span class="coord-val amber-text" id="coord-yaw">90.0°</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Manipulator Control Deck & Subsystems -->
+                        <div class="robot-controls-column">
+
+                            <!-- Control Deck Panel -->
+                            <div class="hud-panel robot-deck-panel">
+                                <div class="panel-header">
+                                    <div class="panel-title-group">
+                                        <i class="fas fa-gamepad amber-text"></i>
+                                        <h3>OPERATOR CONTROL DECK</h3>
+                                    </div>
+                                    <span class="panel-subtitle">MANUAL JOG & CYCLE</span>
+                                </div>
+
+                                <div class="deck-action-grid">
+                                    <button id="btn-auto-cycle" class="cyber-btn cyber-btn-cyan">
+                                        <i class="fas fa-play"></i> <span>AUTO CYCLE</span>
+                                    </button>
+                                    <button id="btn-calibrate" class="cyber-btn cyber-btn-amber">
+                                        <i class="fas fa-crosshairs"></i> <span>HOMING ROUTINE</span>
+                                    </button>
+                                    <button id="btn-gripper-toggle" class="cyber-btn cyber-btn-ghost">
+                                        <i class="fas fa-hand-fist"></i> <span id="gripper-label">GRIPPER: CLAMPED</span>
+                                    </button>
+                                </div>
+
+                                <div class="jog-section">
+                                    <div class="jog-title">AXIS JOG OVERRIDE:</div>
+                                    <div class="jog-pad-grid">
+                                        <button class="jog-btn" data-axis="x" data-dir="1">+X</button>
+                                        <button class="jog-btn" data-axis="x" data-dir="-1">-X</button>
+                                        <button class="jog-btn" data-axis="y" data-dir="1">+Y</button>
+                                        <button class="jog-btn" data-axis="y" data-dir="-1">-Y</button>
+                                        <button class="jog-btn" data-axis="z" data-dir="1">+Z</button>
+                                        <button class="jog-btn" data-axis="z" data-dir="-1">-Z</button>
+                                    </div>
+                                </div>
+
+                                <div class="speed-slider-box">
+                                    <div class="slider-header">
+                                        <span>FEED RATE OVERRIDE:</span>
+                                        <strong id="feedrate-label" class="cyan-text">100%</strong>
+                                    </div>
+                                    <input type="range" id="feedrate-slider" min="10" max="150" value="100" class="cyber-slider">
+                                </div>
+                            </div>
+
+                            <!-- Connected Subsystems Matrix -->
+                            <div class="hud-panel subsystem-panel">
+                                <div class="panel-header">
+                                    <div class="panel-title-group">
+                                        <i class="fas fa-cubes-stacked green-text"></i>
+                                        <h3>SUBSYSTEM TELEMETRY</h3>
+                                    </div>
+                                    <span class="panel-subtitle">4 / 4 ONLINE</span>
+                                </div>
+
+                                <div class="subsystem-rows">
+                                    <div class="sub-row">
+                                        <i class="fas fa-oil-well cyan-text"></i>
+                                        <div class="sub-meta">
+                                            <span>HYDRAULIC POWER UNIT</span>
+                                            <small id="sub-hydraulic">PRESSURE: 6.2 BAR // TEMP: 42°C</small>
+                                        </div>
+                                        <span class="sub-pill green-pill">OPTIMAL</span>
+                                    </div>
+                                    <div class="sub-row">
+                                        <i class="fas fa-microchip amber-text"></i>
+                                        <div class="sub-meta">
+                                            <span>SERVO DRIVE INVERTERS</span>
+                                            <small>6-AXIS DRIVES SYNCED // PWM 16kHz</small>
+                                        </div>
+                                        <span class="sub-pill green-pill">ONLINE</span>
+                                    </div>
+                                    <div class="sub-row">
+                                        <i class="fas fa-compass green-text"></i>
+                                        <div class="sub-meta">
+                                            <span>OPTICAL ROTARY ENCODERS</span>
+                                            <small>24-BIT ABSOLUTE RESOLUTION</small>
+                                        </div>
+                                        <span class="sub-pill green-pill">CALIBRATED</span>
+                                    </div>
+                                    <div class="sub-row">
+                                        <i class="fas fa-shield-virus red-text"></i>
+                                        <div class="sub-meta">
+                                            <span>SAFETY LIGHT CURTAINS</span>
+                                            <small>SAFETY RELAYS ENERGIZED</small>
+                                        </div>
+                                        <span class="sub-pill green-pill">ARMED</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
                     </div>
+
                 </div>
 
-                <!-- 3. AI Analytics View / AI 分析视图（占位） -->
+                <!-- ======================================================== -->
+                <!-- VIEW 3: AI NEURAL DIAGNOSTICS                            -->
+                <!-- ======================================================== -->
                 <div id="ai-view" class="view-content">
-                    <div class="example-grid analytics-grid">
-                        <section class="example-panel risk-panel"><span class="eyebrow">PREDICTIVE HEALTH / MOTOR 07</span><div class="risk-score"><strong>82</strong><span>/ 100<br>HEALTH SCORE</span></div><div class="signal-line"><span>Thermal stability</span><b>GOOD</b><i><em style="width: 78%"></em></i></div><div class="signal-line"><span>Vibration pattern</span><b>WATCH</b><i><em class="amber-bar" style="width: 54%"></em></i></div></section>
-                        <section class="example-panel"><div class="panel-title"><h3>Operator attention</h3><span>Updated now</span></div><div class="insight"><i class="fas fa-triangle-exclamation"></i><div><b>Temperature trend rising</b><p>Watch Motor 07 if the next 3 samples remain above 35°C.</p></div></div><div class="insight muted-insight"><i class="fas fa-check"></i><div><b>No critical prediction</b><p>Current signals do not require an intervention.</p></div></div></section>
+
+                    <div class="ai-diagnostics-grid">
+
+                        <!-- Left: AI Health Matrix & Radar -->
+                        <div class="hud-panel ai-radar-panel">
+                            <div class="panel-header">
+                                <div class="panel-title-group">
+                                    <i class="fas fa-brain cyan-text"></i>
+                                    <h3>NEURAL ANOMALY DETECTION MATRIX</h3>
+                                </div>
+                                <span class="panel-subtitle">// 5-AXIS SENSOR FUSION MODEL</span>
+                            </div>
+
+                            <div class="ai-score-row">
+                                <div class="ai-big-score-box">
+                                    <div class="score-circle">
+                                        <span class="score-num" id="ai-health-score">94</span>
+                                        <span class="score-label">HEALTH INDEX</span>
+                                    </div>
+                                </div>
+                                <div class="ai-score-breakdown">
+                                    <div class="score-kpi">
+                                        <span>ANOMALY PROBABILITY:</span>
+                                        <strong class="green-text" id="ai-anomaly-prob">4.2%</strong>
+                                    </div>
+                                    <div class="score-kpi">
+                                        <span>REMAINING USEFUL LIFE (RUL):</span>
+                                        <strong class="cyan-text" id="ai-rul-val">580 HOURS</strong>
+                                    </div>
+                                    <div class="score-kpi">
+                                        <span>CONFIDENCE INTERVAL:</span>
+                                        <strong class="amber-text">98.6% (σ = 0.04)</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 5-Axis Anomaly Radar Chart -->
+                            <div class="radar-container">
+                                <canvas id="aiRadarChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Right: Predictive AI Insights & Maintenance Advisory -->
+                        <div class="hud-panel ai-advisory-panel">
+                            <div class="panel-header">
+                                <div class="panel-title-group">
+                                    <i class="fas fa-stethoscope amber-text"></i>
+                                    <h3>PREDICTIVE MAINTENANCE FEED</h3>
+                                </div>
+                                <span class="panel-subtitle">LIVE INFERENCE STREAM</span>
+                            </div>
+
+                            <div class="advisory-feed" id="ai-advisory-feed">
+                                <div class="advisory-card optimal">
+                                    <div class="adv-badge"><i class="fas fa-check-double"></i> OPTIMAL</div>
+                                    <div class="adv-content">
+                                        <h4>Thermal Gradient Stable</h4>
+                                        <p>Stator and bearing temperature distribution is conforming to model profile baseline.</p>
+                                        <small><i class="fas fa-clock"></i> Inferred 12s ago // Model: Transformer-SCADA-V4</small>
+                                    </div>
+                                </div>
+                                <div class="advisory-card warn">
+                                    <div class="adv-badge"><i class="fas fa-triangle-exclamation"></i> MONITOR</div>
+                                    <div class="adv-content">
+                                        <h4>Vibration Harmonic Peak at 120Hz</h4>
+                                        <p>Minor harmonic spike detected during heavy spindle acceleration. Lubrication check recommended within 48h.</p>
+                                        <small><i class="fas fa-clock"></i> Inferred 1m ago // Action: Auto-scheduled lubrication scan</small>
+                                    </div>
+                                </div>
+                                <div class="advisory-card info">
+                                    <div class="adv-badge"><i class="fas fa-lightbulb"></i> OPTIMIZATION</div>
+                                    <div class="adv-content">
+                                        <h4>Energy Efficiency Recommendation</h4>
+                                        <p>Power factor is 0.94. Shifting idle feed intervals by 150ms can reduce peak thermal dissipation by 3.2%.</p>
+                                        <small><i class="fas fa-clock"></i> Inferred 3m ago // Estimated savings: $420/month</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
+
                 </div>
 
-                <!-- 4. Reports View / 报表视图（占位） -->
+                <!-- ======================================================== -->
+                <!-- VIEW 4: AUDIT & OEE REPORTS                             -->
+                <!-- ======================================================== -->
                 <div id="report-view" class="view-content">
-                    <div class="example-panel report-panel"><div class="panel-title"><div><span class="eyebrow">SHIFT PERFORMANCE / 27 AUG 2026</span><h2>Line A production report</h2></div><button class="outline-button"><i class="fas fa-download"></i> Export CSV</button></div><div class="report-summary"><span><small>UNITS PRODUCED</small><strong>1,428</strong></span><span><small>EFFICIENCY</small><strong>94.6%</strong></span><span><small>DOWNTIME</small><strong>18 min</strong></span></div><table><thead><tr><th>WINDOW</th><th>OUTPUT</th><th>EFFICIENCY</th><th>STATUS</th></tr></thead><tbody><tr><td>06:00 - 10:00</td><td>486 units</td><td>96.1%</td><td><b class="green-text">ON TARGET</b></td></tr><tr><td>10:00 - 14:00</td><td>512 units</td><td>95.4%</td><td><b class="green-text">ON TARGET</b></td></tr><tr><td>14:00 - 18:00</td><td>430 units</td><td>92.3%</td><td><b class="amber-text">MONITOR</b></td></tr></tbody></table>
+
+                    <div class="report-container-panel">
+
+                        <div class="hud-panel report-main-panel">
+                            <div class="panel-header">
+                                <div class="panel-title-group">
+                                    <i class="fas fa-file-contract cyan-text"></i>
+                                    <div>
+                                        <span class="eyebrow-tag">SHIFT AUDIT REPORT // PRODUCTION LINE A</span>
+                                        <h2>OPERATIONAL TELEMETRY & OEE AUDIT</h2>
+                                    </div>
+                                </div>
+                                <button id="btn-export-csv" class="cyber-btn cyber-btn-cyan">
+                                    <i class="fas fa-file-arrow-down"></i>
+                                    <span>EXPORT SCADA AUDIT CSV</span>
+                                </button>
+                            </div>
+
+                            <!-- OEE Decomposition KPIs -->
+                            <div class="oee-summary-grid">
+                                <div class="oee-card">
+                                    <span class="oee-label">AVAILABILITY RATE</span>
+                                    <strong class="green-text" id="report-avail">98.2%</strong>
+                                    <small>UPTIME: 7h 48m / 8h 00m</small>
+                                </div>
+                                <div class="oee-card">
+                                    <span class="oee-label">PERFORMANCE EFFICIENCY</span>
+                                    <strong class="cyan-text" id="report-perf">95.4%</strong>
+                                    <small>CYCLE TIME: 4.2s / 4.0s TARGET</small>
+                                </div>
+                                <div class="oee-card">
+                                    <span class="oee-label">QUALITY YIELD RATE</span>
+                                    <strong class="amber-text" id="report-qual">99.1%</strong>
+                                    <small>DEFECT RATE: 90 PPM</small>
+                                </div>
+                                <div class="oee-card highlighted">
+                                    <span class="oee-label">TOTAL FACTORY OEE</span>
+                                    <strong class="green-text" id="report-total-oee">92.8%</strong>
+                                    <small>WORLD-CLASS MANUFACTURING</small>
+                                </div>
+                            </div>
+
+                            <!-- Filter & Search Bar -->
+                            <div class="table-filter-bar">
+                                <div class="table-search-box">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                    <input type="text" id="report-search-input" placeholder="Search batch, machine ID or window...">
+                                </div>
+                                <div class="table-tag-filters">
+                                    <button class="tbl-filter-btn active" data-status="ALL">ALL BATCHES</button>
+                                    <button class="tbl-filter-btn" data-status="ON TARGET">ON TARGET</button>
+                                    <button class="tbl-filter-btn" data-status="MONITOR">MONITOR</button>
+                                </div>
+                            </div>
+
+                            <!-- Interactive Audit Table -->
+                            <div class="table-responsive">
+                                <table class="cyber-table" id="audit-table">
+                                    <thead>
+                                        <tr>
+                                            <th>TIME WINDOW</th>
+                                            <th>BATCH ID</th>
+                                            <th>MACHINE NODE</th>
+                                            <th>OUTPUT UNITS</th>
+                                            <th>AVG POWER</th>
+                                            <th>PEAK TEMP</th>
+                                            <th>OEE INDEX</th>
+                                            <th>STATUS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="audit-table-body">
+                                        <tr>
+                                            <td>06:00 - 08:00</td>
+                                            <td><code>#BAT-9021</code></td>
+                                            <td>LINE-A / MOTOR-07</td>
+                                            <td><strong>486 units</strong></td>
+                                            <td>44.2 kW</td>
+                                            <td>32.4°C</td>
+                                            <td>96.8%</td>
+                                            <td><span class="badge-status-ok">ON TARGET</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>08:00 - 10:00</td>
+                                            <td><code>#BAT-9022</code></td>
+                                            <td>LINE-A / MOTOR-07</td>
+                                            <td><strong>512 units</strong></td>
+                                            <td>46.8 kW</td>
+                                            <td>34.1°C</td>
+                                            <td>95.4%</td>
+                                            <td><span class="badge-status-ok">ON TARGET</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>10:00 - 12:00</td>
+                                            <td><code>#BAT-9023</code></td>
+                                            <td>LINE-A / MOTOR-07</td>
+                                            <td><strong>498 units</strong></td>
+                                            <td>45.0 kW</td>
+                                            <td>33.8°C</td>
+                                            <td>96.1%</td>
+                                            <td><span class="badge-status-ok">ON TARGET</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>12:00 - 14:00</td>
+                                            <td><code>#BAT-9024</code></td>
+                                            <td>LINE-A / MOTOR-07</td>
+                                            <td><strong>430 units</strong></td>
+                                            <td>51.2 kW</td>
+                                            <td>36.5°C</td>
+                                            <td>92.3%</td>
+                                            <td><span class="badge-status-warn">MONITOR</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>14:00 - 16:00</td>
+                                            <td><code>#BAT-9025</code></td>
+                                            <td>LINE-A / MOTOR-07</td>
+                                            <td><strong>534 units</strong></td>
+                                            <td>43.7 kW</td>
+                                            <td>31.9°C</td>
+                                            <td>97.4%</td>
+                                            <td><span class="badge-status-ok">ON TARGET</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+
                     </div>
+
                 </div>
 
             </main>
 
-            <!-- Footer / 页脚 -->
-            <footer>
-                <p>FactoryMind AI &copy; 2026 <span id="machine-id">LINE-A / MOTOR-07</span></p>
-                <p id="sample-count">SAMPLE ----</p>
+            <!-- Bottom Futuristic Status Footer -->
+            <footer class="hud-footer">
+                <div class="footer-left">
+                    <span class="footer-brand"><i class="fas fa-cube cyan-text"></i> FactoryMind AI SCADA</span>
+                    <span class="footer-meta">NODE: <strong id="machine-id" class="cyan-text">LINE-A / MOTOR-07</strong></span>
+                    <span class="footer-meta">SAMPLE: <strong id="sample-count" class="green-text">SAMPLE ----</strong></span>
+                </div>
+                <div class="footer-right">
+                    <span class="footer-node-id">SYSTEM RUNNING IN SECURE ASYNC CONTEXT</span>
+                    <span class="footer-copyright">&copy; 2026 FACTORYMIND AI // PROPRIETARY SCADA ENGINE</span>
+                </div>
             </footer>
 
         </div> <!-- content-area end -->
     </div> <!-- app-container end -->
 
-    <!-- Core Business Logic / 核心业务逻辑脚本 -->
+    <!-- Core Business Logic & Chart Engine -->
     <script src="script.js"></script>
 </body>
 </html>

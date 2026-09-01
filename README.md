@@ -1,113 +1,72 @@
-# FactoryMind AI
+# FactoryMind - Industrial Telemetry Dashboard
 
-Real-time factory telemetry dashboard and API.
+A real-time industrial telemetry system with robotic arm control, diagnostics, and production monitoring built with FastAPI, Chart.js, and Web Audio API.
 
-Badges: 
-- CI: (see .github/workflows)
-- License: MIT
-
-## One-liner
-A lightweight real-time telemetry platform built with FastAPI and Chart.js that demonstrates concurrency-safe alerting, health checks, and Dockerized deployment.
-
-## Tech stack
-- Python, FastAPI, uvicorn
-- JavaScript, Chart.js, HTML/CSS
-- Docker, docker-compose
+## Tech Stack
+- **Backend:** Python 3.14, FastAPI, Uvicorn, asyncio, Pydantic, Pytest, Flake8
+- **Frontend:** Cyberpunk Glassmorphism HUD, Vanilla JS (ES6+), Web Audio Synth, Chart.js, SVG Kinematics
+- **Deployment:** Docker, Docker Compose
 
 ## Features
-- Real-time /api/data endpoint simulating telemetry
-- Concurrency-safe debounce alarm: requires 3 consecutive high-temp readings to trigger a CRITICAL
-- /health endpoint for loadbalancer/readiness checks
-- Environment-driven CORS (ALLOWED_ORIGINS)
-- Android USB diagnostics through the local ADB bridge (`/api/phone`)
-- Dockerfile and docker-compose for reproducible deployment
+- **Dashboard UI:** Real-time monitoring with dark theme, animated gauges, and live charts
+- **Telemetry:** Core sensor data (temperature, RPM, power, vibration, load, OEE)
+- **Alerting:** 3-sample debounce logic to eliminate false alarms
+- **Robot Arm:** 6-axis kinematics visualization with real hardware or digital twin simulation
+- **Diagnostics:** Health scoring and anomaly detection with radar chart
+- **SCADA Logs:** Event stream and audit trail for production monitoring
+- **Controls:** Stress test, E-Stop, reset, and production line switching
+- **CSV Export:** Generate operational reports on demand
 
-## Quick start (local)
-1. Create a virtualenv and activate it:
+## Quick Start (Local)
 
-   Windows (PowerShell):
+1. Create a virtual environment & install dependencies:
    ```powershell
    python -m venv .venv
    .\.venv\Scripts\Activate.ps1
-   ```
-
-   macOS / Linux:
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate
-   ```
-
-2. Install dependencies:
-
    pip install -r requirements.txt
+   ```
 
-3. Run the app:
+2. Start the application:
+   - **One-click launch with browser auto-open (Recommended):**
+     ```powershell
+     python launch.py --local
+     # or on Windows:
+     launch.bat
+     ```
+   - **Start backend server only:**
+     ```powershell
+     python run.py --local
+     # or for LAN access:
+     python run.py --public
+     ```
+   - **PowerShell script:**
+     ```powershell
+     .\start.ps1
+     ```
 
-   python run.py --local
+3. Open your browser: `http://127.0.0.1:8080`
 
-   This binds the app to 127.0.0.1 only, so only the current machine can access it.
+## API Endpoints
+- `GET /health` - Health status, version, uptime, and UTC timestamp
+- `GET /api/data` - Real-time industrial telemetry packet (temperatures, RPM, power, vibration, OEE, alerts)
+- `GET /api/scada-logs` - Live SCADA PLC event log stream
+- `POST /api/control/stress` - Toggle simulated thermal stress overload
+- `POST /api/control/estop` - Toggle emergency stop safety interlock
+- `POST /api/control/reset` - Clear diagnostic counters and reset alarms
+- `POST /api/control/line` - Switch target production node (`LINE-A`, `LINE-B`, `LINE-C`)
 
-   To make it accessible on your local network, run:
-
-   python run.py --public
-
-   If you want a single entry-point that starts the backend directly for the dashboard, run:
-
-   python start_all.py --local
-
-   On Windows, you can also use the one-click scripts:
-
-   launch.bat
-   desktop-launch.cmd
-   start.bat
-   powershell -ExecutionPolicy Bypass -File .\start.ps1
-
-   For the most convenient experience, use:
-
-   python launch.py --local
-
-   It will start the backend and open the dashboard automatically in your browser.
-
-4. Open browser: http://127.0.0.1:8080
-
-## Docker
-Build and run with Docker (requires Docker installed):
-
+## Tests & Linting
+Run smoke tests and code style checks:
 ```bash
-docker build -t factorymind .
-docker run -p 8080:8080 factorymind
+python -m pytest -v
+python -m flake8 --exclude=.venv,src/__pycache__,tests/__pycache__
 ```
 
-Or use docker-compose:
-
+## Docker Deployment
+Build and run using Docker:
 ```bash
 docker compose up --build
 ```
 
-## API
-- GET /health -> { status: "ok", timestamp }
-- GET /api/data -> telemetry JSON (temperature, energy, production, status_text, status_code, alert_count, timestamp)
-- GET /api/phone -> Android USB state and non-sensitive diagnostics (device, battery, temperature)
-
-### Android USB diagnostics
-
-Install Android SDK Platform-Tools, enable USB debugging on the phone, connect it by cable, and approve the RSA prompt. The dashboard reports `connected`, `disconnected`, `unauthorized`, or `unavailable`; it does not treat an unreadable device as healthy.
-
-## Tests
-Run the smoke tests (pytest):
-
-```bash
-pip install pytest
-pytest -q
-```
-
-## For your resume
-FactoryMind AI — Real‑time factory telemetry dashboard (FastAPI, Chart.js, Docker)
-- Implemented concurrency-safe debounce alerting (asyncio.Lock + app.state) to reduce false alarms; added health checks and Docker support for reproducible deployments.
-
 ## License
 MIT (see LICENSE)
-
----
-
-Replace placeholder values (author name, demo links) before publishing the repository publicly.
